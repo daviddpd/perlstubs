@@ -22,7 +22,11 @@ my $CERTS_DIR 			= "./certs";
 my $USERAGENT			= "dpd-libcurl/1";
 
 my $data				= '';
+my $headers				= '';
 
+
+# Useful reference for curl opts
+# http://curl.haxx.se/libcurl/c/curl_easy_setopt.html
 my $curl = WWW::Curl::Easy->new;
 
 $curl->setopt(CURLOPT_URL, $URL );
@@ -33,9 +37,16 @@ $curl->setopt(CURLOPT_DNS_CACHE_TIMEOUT, 0);
 
 $curl->setopt(CURLOPT_USERAGENT, $USERAGENT); 
 
+# Follow Redirects
+# $curl->setopt(CURLOPT_FOLLOWLOCATION, 1 );
+
+# This adds the response header to the CURLOPT_WRITEDATA output 
+# $curl->setopt(CURLOPT_HEADER, 1);
+
 $curl->setopt(CURLOPT_VERBOSE, 1);
 
 $curl->setopt(CURLOPT_WRITEDATA, \$data);
+$curl->setopt(CURLOPT_HEADERDATA, \$headers);
 
 # Set method to POST
 # $curl->setopt(CURLOPT_POST, 1);
@@ -63,6 +74,9 @@ if ($retcode == 0) {
 } else {
 	print("An error happened: $retcode ".$curl->strerror($retcode)." ".$curl->errbuf."\n");
 }
+
+print " \n\n ==================== HTTP Headers ======================== \n\n ";
+print $headers;
         
 print " \n\n ==================== HTTP Body (first 256 bytes) ======================== \n\n ";
 print substr($data, 0, 256 );
