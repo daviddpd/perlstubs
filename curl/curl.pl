@@ -64,3 +64,9 @@ if ($retcode == 0) {
 	print("An error happened: $retcode ".$curl->strerror($retcode)." ".$curl->errbuf."\n");
 }
         
+print " \n\n ==================== HTTP Body (first 256 bytes) ======================== \n\n ";
+print substr($data, 0, 256 );
+print "\n\n ==================== HTTP Body ======================== \n\n ";
+
+
+
