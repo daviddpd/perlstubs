@@ -15,17 +15,19 @@ my %ssh_passwds;
 
 $|++;
 
+my $_user = $ENV{'USER'};
+
 my ($opt, $usage) = describe_options(
 	'%c %o',
+	[ 'hostfile=s', 'file of hosts', {required => 1} ],
+	[ 'cmd=s', "file to copy", {required => 1}  ],
 	[ 'ssh|s', "do the ssh (default is not to)",   ], 
 	[ 'sshdebug|d', "enable ssh debugging",   ],
 	[ 'verbose|v', "enable verbose output from script",   ],
-	
 	[ 'workers|w=i', "number of workers/childer", { default => 1 }  ],
-	[ 'cmd=s', "file to copy", {required => 1}  ],
 	[ 'copy=s', "file to copy",  ],
-	[ 'destdir=s', "file to copy", { default => '/tmp' },  ],
-	[ 'hostfile=s', 'file of hosts', {required => 1} ],
+	[ 'destdir=s', "file to copy", { default => '/tmp' } ],
+	[ 'user|u=s', "user name to use, default enviromental USER var", { default => $_user } ],
 		
 );
 
@@ -36,7 +38,7 @@ if ( $opt->ssh ) {
 		$Net::OpenSSH::debug = -1;
 	}
 	%opts = ( 
-			'user' => 'root', 
+			'user' => $opt->{'user'},
 #			'password' => "", 
 #			'proxy_command' => "env SSH_AUTH_SOCK=$agent ssh  -q -W %h:%p bastion.local",
 			'timeout' => 1200,  
@@ -70,7 +72,6 @@ my $pm = new Parallel::ForkManager($opt->{'workers'});
 for my $host (@hosts) {
 	my $child_pid = $pm->start;
 	if ( $child_pid == 0 ) {	
-		#print " ==> $host \n";
 		my $ssh;
 		$ssh = Net::OpenSSH->new($host, %opts);
 		if ( $ssh->error ) {
