@@ -78,11 +78,22 @@ for my $host (@hosts) {
 			print STDERR "Couldn't establish SSH connection( " . $host . " ) : ". $ssh->error . "\n" if $opt->{'verbose'};
 			push @errors, $host;
 		} else {
-			 
-			my $uuid = $ssh->capture("sysctl -n kern.hostuuid");	
-			chomp $uuid;
 
-			printf ( "$0 $$ %16s  %8s %s\n", $host, "uuid", $uuid ) if $opt->{'verbose'};
+my @sysctls = (
+        "kern.ostype",
+        "kern.version",
+        "kern.hostuuid",
+    );
+			 
+			for my $sc ( @sysctls ) {
+    			my $uuid = $ssh->capture("sysctl -n $sc");	
+	    		chomp $uuid;
+		    	printf ( "$0 $$ %16s  %8s %s\n", $host, "$sc", $uuid ) if $opt->{'verbose'};
+		    }
+			
+            my $etcversion = $ssh->capture("test -f /etc/version && cat /etc/version ");	
+            chomp $etcversion;
+            printf ( "$0 $$ %16s  %8s %s\n", $host, "etc-version", $etcversion ) if $opt->{'verbose'};
 			
 			if ( $opt->{'copy'} ) {
 				printf ( "$0 $$ %16s  %8s %s\n", $host, "SCP", "starting copy of $opt->{'copy'} to $host:$opt->{'destdir'} " ) if $opt->{'verbose'};
