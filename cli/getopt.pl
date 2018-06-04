@@ -30,6 +30,8 @@ my ($opt, $usage) = describe_options(
 	[ 'flag', "boolean flag",   ], 
 	[ 'int|i=i', "interger option", { default => 1 }  ],
 	[ 'float|f=f', "interger option", { default => 0.1 }  ],
+	[ 'mutli|m=s@', "Allow the use of --multi/-m mutliple times, add all into an array " ],
+	
 	
 # FIXME: I haven't been able to figure out the syntax for multiple times.
 #	[ 'debug|d:@', "file to copy",  ],
