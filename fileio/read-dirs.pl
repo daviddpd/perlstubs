@@ -13,3 +13,19 @@ while (readdir $dh) {
     print "$dir/$_\n";
 }
 closedir $dh;
+
+
+# recursive read and print all files
+
+sub rdir() {
+    my $dir = shift;
+    opendir(my $dh, $dir) || die "Can't open $dir: $!";
+    while (readdir $dh) {
+        print "$dir/$_\n";
+        if ( -d "$dir/$_" ) {
+            next if ($_ =~/\.+$/);
+            rdir ("$dir/$_");        
+        }
+    }
+    closedir $dh;
+}
