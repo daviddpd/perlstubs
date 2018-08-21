@@ -44,8 +44,9 @@ sub do_ssh
         $sudo = 1;
     }   
     my $out;
-    if ( $sudo ) {     
-        $out = $ssh->capture( { stdin_data => "$sudo_passwd\n" }, '/usr/local/bin/sudo', '-Sk', '-p', '', '--', "$cmd");
+    if ( $sudo ) {
+        my @c = split (/ /, $cmd);
+        $out = $ssh->capture( { stdin_data => "$sudo_passwd\n" }, '/usr/local/bin/sudo', '-Sk', '-p', '', '--', @c);
     } else {
         $out = $ssh->capture("$cmd");
     }
