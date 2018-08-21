@@ -8,7 +8,6 @@ use Getopt::Long::Descriptive;
 use Parallel::ForkManager;
 use File::Basename;
 use Net::OpenSSH;
-use Term::Readkey;
 
 my $agent;
 my %opts;
