@@ -8,10 +8,12 @@ use Getopt::Long::Descriptive;
 use Parallel::ForkManager;
 use File::Basename;
 use Net::OpenSSH;
+use Term::Readkey;
 
 my $agent;
 my %opts;
 my %ssh_passwds;
+our $sudo_passwd = '';
 
 $|++;
 
@@ -32,10 +34,30 @@ my ($opt, $usage) = describe_options(
 );
 
 
+sub do_ssh
+{
+    our $sudo_passwd;
+    my $ssh = shift;
+    my $cmd = shift;
+    my $sudo = 0;
+    if ( $cmd =~ m/^sudo / ) {
+        $cmd =~ s/^sudo //g;
+        $sudo = 1;
+    }   
+    my $out;
+    if ( $sudo ) {     
+        $out = $ssh->capture( { stdin_data => "$sudo_passwd\n" }, '/usr/local/bin/sudo', '-Sk', '-p', '', '--', "$cmd");
+    } else {
+        $out = $ssh->capture("$cmd");
+    }
+    return $out;
+}
+
+
 if ( $opt->ssh ) {
 	$agent = $ENV{'SSH_AUTH_SOCK'} or die ("ssh-agent is not running, please run and try again");
 	if ( $opt->sshdebug ) {
-		$Net::OpenSSH::debug = -1;
+		$Net::OpenSSH::debug = 1;
 	}
 	%opts = ( 
 			'user' => $opt->{'user'},
@@ -52,6 +74,16 @@ if ( $opt->ssh ) {
 
 if ( ! -f $opt->{'hostfile'} ) {
 	die ( "Can't find hostfile $opt->{'hostfile'}");
+}
+
+if ( $opt->cmd =~ m/^sudo/ ) {
+    if ( length $sudo_passwd < 2 ) {
+system('stty -echo');
+        print "Enter Sudo Password: ";
+        chomp($sudo_passwd = <STDIN>);
+system('stty echo');
+
+    }
 }
 
 my @hosts;
@@ -86,12 +118,12 @@ my @sysctls = (
     );
 			 
 			for my $sc ( @sysctls ) {
-    			my $uuid = $ssh->capture("sysctl -n $sc");	
+    			my $uuid = do_ssh($ssh, "sysctl -n $sc");	
 	    		chomp $uuid;
 		    	printf ( "$0 $$ %16s  %8s %s\n", $host, "$sc", $uuid ) if $opt->{'verbose'};
 		    }
 			
-            my $etcversion = $ssh->capture("test -f /etc/version && cat /etc/version ");	
+            my $etcversion = do_ssh($ssh, "test -f /etc/version && cat /etc/version ");	
             chomp $etcversion;
             printf ( "$0 $$ %16s  %8s %s\n", $host, "etc-version", $etcversion ) if $opt->{'verbose'};
 			
@@ -101,7 +133,7 @@ my @sysctls = (
 			}
 			
 			printf ( "$0 $$ %16s  %8s %s\n", $host, "EXEC", "running $opt->{'cmd'}" ) if $opt->{'verbose'};
-			my $h = $ssh->capture($opt->{'cmd'});				
+			my $h = do_ssh($ssh, $opt->{'cmd'});				
 			chomp $h;
 			printf ( "$0 $$ %16s  %8s %s\n", $host, "EXECOUT", $h ) if $opt->{'verbose'};
 		}
