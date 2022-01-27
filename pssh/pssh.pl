@@ -112,7 +112,11 @@ for my $host (@hosts) {
 		} else {
 
 my @sysctls = (
-        "kern.ostype",
+#        "kern.ostype",
+        "hw.machine",
+        "hw.model",
+        "hw.ncpu",
+        "hw.physmem",
         "kern.version",
         "kern.hostuuid",
     );
@@ -120,6 +124,7 @@ my @sysctls = (
 			for my $sc ( @sysctls ) {
     			my $uuid = do_ssh($ssh, "sysctl -n $sc");	
 	    		chomp $uuid;
+	    		$uuid =~ s/\n/ /g;
 		    	printf ( "$0 $$ %16s  %8s %s\n", $host, "$sc", $uuid ) if $opt->{'verbose'};
 		    }
 			

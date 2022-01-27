@@ -24,10 +24,10 @@ my $unixtime = str2time($opt->{'d'}) || die ("can't parse date");
 #print "unixtime: $unixtime\n";
 #print "date string: $date\n";
 print "$unixtime\n";
-#($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime($unixtime);
+my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime($unixtime);
 
-#$date = sprintf ("%04d-%02d-%02d %02d:%02d:%02d -", 1900+$year, $mon+1, $mday, $hour,$min,$sec);
+my $date = sprintf ("%04d-%02d-%02d %02d:%02d:%02d - %s", 1900+$year, $mon+1, $mday, $hour,$min,$sec,$wday);
 
-#print "date string: $date\n";
+print "date string: $date\n";
 
 

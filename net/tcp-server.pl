@@ -17,7 +17,7 @@ my ($opt, $usage) = describe_options(
 	[ 'verbose|v', "verbose"],
 	[ 'ip=s', "list on", { default => '0.0.0.0' }, ],	
 	[ 'port=i', "port", { default => 7272 } ],		
-	[ 'workers|w=i', "number of workers/childer", { default => 1 }  ],
+	[ 'workers|w=i', "number of workers/childer", { default => 5 }  ],
 	
 );
 print($usage->text), exit if $opt->help;
@@ -28,7 +28,7 @@ my $socket = new IO::Socket::INET (
     LocalHost => $opt->{'ip'},
     LocalPort => $opt->{'port'},
     Proto => 'tcp',
-    Listen => 5,
+    Listen => $opt->{'workers'},
     Reuse => 1
 );
 if ( $socket ) {
@@ -41,8 +41,7 @@ my $pm = new Parallel::ForkManager($opt->{'workers'});
 
 while(1)
 {
-    my $client_socket = $socket->accept();
-    
+    my $client_socket = $socket->accept();    
 	my $child_pid = $pm->start;
 	if ( $child_pid == 0 ) {
 		my $client_address = $client_socket->peerhost();

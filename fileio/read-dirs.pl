@@ -8,24 +8,23 @@ use warnings;
 my $dir = $ARGV[0];
 print $dir . "\n";
 
+my $dir = $opt->{"dir"};
 opendir(my $dh, $dir) || die "Can't open $dir: $!";
-while (readdir $dh) {
-    print "$dir/$_\n";
-}
+rdir ("$dir");
 closedir $dh;
-
 
 # recursive read and print all files
 
-sub rdir() {
+sub rdir {
     my $dir = shift;
     opendir(my $dh, $dir) || die "Can't open $dir: $!";
     while (readdir $dh) {
-        print "$dir/$_\n";
-        if ( -d "$dir/$_" ) {
-            next if ($_ =~/\.+$/);
-            rdir ("$dir/$_");        
-        }
+    	my $d = $_;
+		next if ($d =~/\.+$/);
+		if ( -d "$dir/$d"  ) {
+			print "recurse : $dir/ ( $d ) \n";
+			rdir ("$dir/$d");
+		}
     }
     closedir $dh;
 }
